@@ -21,3 +21,5 @@ df = df %>%
          odometer = as.integer(odometer),
          mmr = as.integer(mmr),
          sellingprice = as.integer(sellingprice))
+
+# comentario
