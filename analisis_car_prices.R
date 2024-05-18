@@ -1,13 +1,45 @@
+install.packages("gridExtra")
 library(tidyverse)
 library(modelr)
+library(ggplot2)
+library(gridExtra)
+
+### Importacion del .csv
 
 df = read_csv("car_prices.csv")
 
-### Exploracion de df
-nas = summary(df)
-nas
 
-  # Cuantos NA hay en cada variable 
+
+
+
+### Limpieza de datos
+# Exploracion del data frame
+
+summary(df)  # summary() solo nos informa los NA's de las variables numericas.
+glimpse(df)
+str(df)
+
+
+
+# Chequeo de errores estructurales
+
+glimpse(df)
+# year: dbl --> int
+# condition: dbl --> int
+# odometer: dbl --> int
+# mmr: dbl --> int
+# sellingprice: dbl --> int
+
+df = df %>%
+  mutate(year = as.integer(year), 
+         condition = as.integer(condition),
+         odometer = as.integer(odometer),
+         mmr = as.integer(mmr),
+         sellingprice = as.integer(sellingprice))
+
+
+
+# Cantidad de NA's en cada variable
 
 # "year" = 0
 df %>%
@@ -91,32 +123,66 @@ df %>%
 
 
 
+# Chequeo de outliers
+
+df %>%
+  summarise(rango_year = range(year, na.rm = T), 
+            rango_condition = range(condition, na.rm = T),
+            rango_odometer = range(odometer, na.rm = T),
+            rango_mmr = range(mmr, na.rm = T),
+            rango_sellingprice = range(sellingprice, na.rm = T))
+
+
+p1 = ggplot(data = df) + 
+  geom_boxplot(mapping = aes(x = factor(1), y = year)) +
+  labs(title = "Year", x = NULL, y = NULL) +
+  theme(plot.title = element_text(hjust = 0.5))
+
+p2 = ggplot(data = df) + 
+  geom_boxplot(mapping = aes(x = factor(1), y = condition)) +
+  labs(title = "Condition", x = NULL, y = NULL) +
+  theme(plot.title = element_text(hjust = 0.5))
+
+p3 = ggplot(data = df) + 
+  geom_boxplot(mapping = aes(x = factor(1), y = odometer)) +
+  labs(title = "Odometer", x = NULL, y = NULL) +
+  theme(plot.title = element_text(hjust = 0.5))
+
+p4 = ggplot(data = df) + 
+  geom_boxplot(mapping = aes(x = factor(1), y = mmr)) +
+  labs(title = "MMR", x = NULL, y = NULL) +
+  theme(plot.title = element_text(hjust = 0.5))
+
+p5 = ggplot(data = df) + 
+  geom_boxplot(mapping = aes(x = factor(1), y = sellingprice)) +
+  labs(title = "Selling Price", x = NULL, y = NULL) +
+  theme(plot.title = element_text(hjust = 0.5))
+
+grid.arrange(p1, p2, p3, p4, p5, ncol = 2)
 
 
 
+# Chequeo de irregularidades en las variables de tipo "chr"
 
-### Chequeo de errores estructurales
-glimpse(df)
-# year: dbl --> int
-# condition: dbl --> int
-# odometer: dbl --> int
-# mmr: dbl --> int
-# sellingprice: dbl --> int
+unique_make = summarise(df, unique_make = unique(make))
+unique_model = summarise(df, unique_model = unique(model))
+unique_trim = summarise(df, unique_trim = unique(trim))
+unique_body = summarise(df, unique_body = unique(body))
+unique_transmission = summarise(df, unique_transmission = unique(transmission))
+unique_vin = summarise(df, unique_vin = unique(vin))
+unique_state = summarise(df, unique_state = unique(state))
+unique_color = summarise(df, unique_color = unique(color))
+unique_interior = summarise(df, unique_interior = unique(interior))
+unique_seller = summarise(df, unique_seller = unique(seller))
 
-df = df %>%
-  mutate(year = as.integer(year), 
-         condition = as.integer(condition),
-         odometer = as.integer(odometer),
-         mmr = as.integer(mmr),
-         sellingprice = as.integer(sellingprice))
 
 
 # Eliminando las filas con km outliers
 
-df <- df %>%
+df = df %>%
   filter(!(year >= 2013 & odometer == 999999))
 
 # Eliminando las filas con "make" == NA y "model" = NA
 
-df <- df %>%
+df = df %>%
   filter(!(is.na(model) & is.na(make)))
