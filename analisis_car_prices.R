@@ -4,16 +4,16 @@ library(modelr)
 library(ggplot2)
 library(gridExtra)
 
-### Importacion del .csv
+### Importacion del .csv.
 
 df = read_csv("car_prices.csv")
 
 
+# -------------------------------------------------------------------------------------------------------------------
 
 
-
-### Limpieza de datos
-# Exploracion del data frame
+### Limpieza de datos.
+# Exploracion del data frame.
 
 summary(df)  # summary() solo nos informa los NA's de las variables numericas.
 glimpse(df)
@@ -21,9 +21,10 @@ str(df)
 
 
 
-# Chequeo de errores estructurales
+# Chequeo de errores estructurales.
 
 glimpse(df)
+# Pasar:
 # year: dbl --> int
 # condition: dbl --> int
 # odometer: dbl --> int
@@ -39,7 +40,7 @@ df = df %>%
 
 
 
-# Cantidad de NA's en cada variable
+# Cantidad de NA's en cada variable.
 
 # "year" = 0
 df %>%
@@ -123,8 +124,9 @@ df %>%
 
 
 
-# Chequeo de outliers
+# Chequeo de outliers en las variables numericas.
 
+# Paneo general.
 df %>%
   summarise(rango_year = range(year, na.rm = T), 
             rango_condition = range(condition, na.rm = T),
@@ -133,6 +135,8 @@ df %>%
             rango_sellingprice = range(sellingprice, na.rm = T))
 
 
+
+# Boxplots de las variables numericas.
 p1 = ggplot(data = df) + 
   geom_boxplot(mapping = aes(x = factor(1), y = year)) +
   labs(title = "Year", x = NULL, y = NULL) +
@@ -162,12 +166,31 @@ grid.arrange(p1, p2, p3, p4, p5, ncol = 2)
 
 
 
-# Chequeo de irregularidades en las variables de tipo "chr"
+# Chequeo de irregularidades en las variables de tipo "chr".
 
-exclude_columns = c("vin", "saledate")
+exclude_columns = c("vin", "saledate")  # Columnas que no corresponde cambiarlas a tipo "chr"
 
 df = df %>%
   mutate(across(where(is.character) & !all_of(exclude_columns), tolower))
+
+
+
+# Observacion de valores unicos en cada columna.
+
+unique_make = summarise(df, unique_make = unique(make))
+unique_model = summarise(df, unique_model = unique(model))
+unique_trim = summarise(df, unique_trim = unique(trim))
+unique_body = summarise(df, unique_body = unique(body))
+unique_transmission = summarise(df, unique_transmission = unique(transmission))
+unique_vin = summarise(df, unique_vin = unique(vin))  # A revisar
+unique_state = summarise(df, unique_state = unique(state))
+unique_color = summarise(df, unique_color = unique(color))
+unique_interior = summarise(df, unique_interior = unique(interior))
+unique_seller = summarise(df, unique_seller = unique(seller))
+  
+
+
+# Unifico formato de la columna "make".
 
 df = df %>%
   mutate(make = if_else(grepl("mercedes", make), "mercedes benz", make),
@@ -183,25 +206,40 @@ df = df %>%
 
 
 
-unique_make = summarise(df, unique_make = unique(make))
-unique_model = summarise(df, unique_model = unique(model))
-unique_trim = summarise(df, unique_trim = unique(trim))
-unique_body = summarise(df, unique_body = unique(body))
-unique_transmission = summarise(df, unique_transmission = unique(transmission))
-unique_vin = summarise(df, unique_vin = unique(vin))
-unique_state = summarise(df, unique_state = unique(state))
-unique_color = summarise(df, unique_color = unique(color))
-unique_interior = summarise(df, unique_interior = unique(interior))
-unique_seller = summarise(df, unique_seller = unique(seller))
-  
+# Elimino los valores "sedan" de la columna "transmission" ya que son incorrectos.
+
+df_sedan = df %>%  # Observo solo las filas "sedan"
+  filter(transmission == "sedan")
+
+df = subset(df, !(transmission == "sedan" & !is.na(transmission)))  # Elimino las filas "sedan"
 
 
-# Eliminando las filas con km outliers
+# En la columna "vin" hay valores repetidos, cuando se supone que deberian ser todos valores unicos.
+# ¿Que hacemos?
+
+df_vin = df %>%
+  filter(!grepl("[0-9]$", vin))  # Observo si hay filas en "vin" que no terminen con un numero
+
+
+# Cambio los valores "—" de la columna "color" a NA.
+
+df = df %>%
+  mutate(color = if_else(color == "—", NA, color))
+
+
+# Cambio los valores "—" de la columna "interior" a NA.
+
+df = df %>%
+  mutate(interior = if_else(interior == "—", NA, interior))
+
+
+
+# Elimino las filas con km outliers.
 
 df = df %>%
   filter(!(year >= 2013 & odometer == 999999))
 
-# Eliminando las filas con "make" == NA y "model" = NA
+# Elimino las filas con "make" == NA y "model" = NA.
 
 df = df %>%
   filter(!(is.na(model) & is.na(make)))
