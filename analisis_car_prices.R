@@ -164,6 +164,25 @@ grid.arrange(p1, p2, p3, p4, p5, ncol = 2)
 
 # Chequeo de irregularidades en las variables de tipo "chr"
 
+exclude_columns = c("vin", "saledate")
+
+df = df %>%
+  mutate(across(where(is.character) & !all_of(exclude_columns), tolower))
+
+df = df %>%
+  mutate(make = if_else(grepl("mercedes", make), "mercedes benz", make),
+         make = if_else(grepl("land", make) | make == "landrover", "land rover", make),
+         make = if_else(grepl("gmc", make), "gmc", make),
+         make = if_else(grepl("dodge", make), "dodge", make),
+         make = if_else(grepl("rolls", make), "rolls royce", make),
+         make = if_else(grepl("mazda", make), "mazda", make),
+         make = if_else(grepl("hyundai", make), "hyundai", make),
+         make = if_else(make == "vw", "volkswagen", make),
+         make = if_else(grepl("chev", make), "chevrolet", make),
+         make = if_else(grepl("ford", make), "ford", make))
+
+
+
 unique_make = summarise(df, unique_make = unique(make))
 unique_model = summarise(df, unique_model = unique(model))
 unique_trim = summarise(df, unique_trim = unique(trim))
@@ -174,7 +193,7 @@ unique_state = summarise(df, unique_state = unique(state))
 unique_color = summarise(df, unique_color = unique(color))
 unique_interior = summarise(df, unique_interior = unique(interior))
 unique_seller = summarise(df, unique_seller = unique(seller))
-
+  
 
 
 # Eliminando las filas con km outliers
