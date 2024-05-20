@@ -171,7 +171,7 @@ grid.arrange(p1, p2, p3, p4, p5, ncol = 2)
 exclude_columns = c("vin", "saledate")  # Columnas que no corresponde cambiarlas a tipo "chr"
 
 df = df %>%
-  mutate(across(where(is.character) & !all_of(exclude_columns), tolower))
+  mutate(across(where(is.character) & !all_of(exclude_columns), tolower))  # Paso las columnas a minuscula
 
 
 
@@ -243,3 +243,27 @@ df = df %>%
 
 df = df %>%
   filter(!(is.na(model) & is.na(make)))
+
+# -------------------------------------------------------------------------------------------------------------------
+
+### Graficos.
+
+odo_vs_year = ggplot(data = df) +
+  geom_point(mapping = aes(x=year, y=odometer))
+
+odo_vs_year
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
