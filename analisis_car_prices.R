@@ -206,6 +206,20 @@ df = df %>%
 
 
 
+# Unifico formato de la columna "body".
+
+df = df %>%
+  mutate(body = if_else(grepl("coupe", body), "coupe", body),
+         body = if_else(grepl("koup", body), "coupe", body),
+         body = if_else(grepl("wagon", body), "wagon", body),
+         body = if_else(grepl("convertible", body), "convertible", body),
+         body = if_else(grepl("regular-cab", body), "regular cab", body),
+         body = if_else(("ram van" == body) | ("transit van" == body) | ("promaster cargo van" == body),
+                        "van", body),
+         body = if_else(grepl("cab plus", body), "cab plus", body))
+
+# print(count(df, body), n = 46)
+
 # Elimino los valores "sedan" de la columna "transmission" ya que son incorrectos.
 
 df_sedan = df %>%  # Observo solo las filas "sedan"
@@ -248,16 +262,42 @@ df = df %>%
 
 ### Graficos.
 
-odo_vs_year = ggplot(data = df) +
-  geom_point(mapping = aes(x=year, y=odometer))
+#odo_vs_year = ggplot(data = df) +
+#  geom_point(mapping = aes(x = year, y = odometer)) + 
+#  labs(x = "Años", y = "Kilometraje [km]") + 
+#  labs(title = "Kilometraje vs Años")
 
-odo_vs_year
-
-
-
-
+#odo_vs_year
 
 
+sellingp_vs_transmission = ggplot(data = df) + 
+  geom_jitter(mapping = aes(x = transmission, y = sellingprice),
+              alpha = 0.2) + 
+  geom_boxplot(mapping = aes(x = transmission, y = sellingprice), fill = "grey") +
+  labs(x = "Transmision del auto", y = "Precio de Venta [USD]") + 
+  labs(title = "Precio de venta en base a la transmision")
+
+sellingp_vs_transmission
+
+
+
+
+sellingp_vs_mmr = ggplot(data = df) + 
+  geom_point(mapping=aes(x = mmr, y = sellingprice)) + 
+  labs(x = "Precio estimado de venta [USD]", y = "Precio de venta [USD]") + 
+  labs(title = "Precio de venta respecto al precio de venta estimado")
+
+sellingp_vs_mmr
+
+
+
+
+sellingp_vs_odometer = ggplot(data=df) + 
+  geom_point(mapping=aes(x = odometer, y = sellingprice)) +
+  labs(x = "Kilometraje [km]", y = "Precio de venta [USD]") + 
+  labs(title = "Precio de venta en base al kilometraje")
+
+sellingp_vs_odometer
 
 
 
