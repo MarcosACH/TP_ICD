@@ -1,4 +1,3 @@
-install.packages("gridExtra")
 library(tidyverse)
 library(modelr)
 library(ggplot2)
@@ -218,7 +217,7 @@ df = df %>%
                         "van", body),
          body = if_else(grepl("cab plus", body), "cab plus", body))
 
-# print(count(df, body), n = 46)
+
 
 # Elimino los valores "sedan" de la columna "transmission" ya que son incorrectos.
 
@@ -229,7 +228,7 @@ df = subset(df, !(transmission == "sedan" & !is.na(transmission)))  # Elimino la
 
 
 # En la columna "vin" hay valores repetidos, cuando se supone que deberian ser todos valores unicos.
-# ¿Que hacemos?
+# ¿Que hacemos? En este caso no nos influye porque no vamos a utilizar esta columna en nuestro analisis.
 
 df_vin = df %>%
   filter(!grepl("[0-9]$", vin))  # Observo si hay filas en "vin" que no terminen con un numero
@@ -248,15 +247,50 @@ df = df %>%
 
 
 
-# Elimino las filas con km outliers.
-
-df = df %>%
-  filter(!(year >= 2013 & odometer == 999999))
-
 # Elimino las filas con "make" == NA y "model" = NA.
 
 df = df %>%
   filter(!(is.na(model) & is.na(make)))
+
+
+# Analizo las filas que tienen "odometer" == max(odometer) (supuestos outliers superiores).
+
+df_odometer_max = df %>%
+  filter(odometer == max(odometer, na.rm = TRUE))
+
+# Elimino las filas con km outliers superiores con "year" > 2005.
+
+df = df %>%
+  filter(!(year > 2005 & odometer == max(odometer, na.rm = TRUE)))
+
+
+
+# Analizo las filas que tienen "odometer" == min(odometer) (supuestos outliers inferiores).
+
+df_odometer_min = df %>%
+  filter(odometer == min(odometer, na.rm = TRUE))
+
+ggplot(data = df_odometer_min, mapping = aes(x=condition, y=sellingprice)) +
+  geom_point()
+
+# Elimino las filas con km outliers inferiores con "condition" > 20.
+
+df = df %>%
+  filter(!(condition > 20 & odometer == min(odometer, na.rm = TRUE)))
+
+
+
+# Analizo las columnas "make" y "model" que son NA.
+
+df_na_make_or_model = df %>%
+  filter(is.na(make) | is.na(model))  # Aproximadamente un 2% del df cumplen esta condicion
+
+
+
+# Analizo las filas que tienen "sellingprice" < 300.
+
+df_sellingp_low = df %>%
+  filter(sellingprice < 300)
 
 
 # -------------------------------------------------------------------------------------------------------------------
