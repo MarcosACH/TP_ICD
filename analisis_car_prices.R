@@ -17,6 +17,7 @@ df = read_csv("car_prices.csv")
 summary(df)  # summary() solo nos informa los NA's de las variables numericas.
 glimpse(df)
 str(df)
+problems(df)
 
 
 
@@ -30,6 +31,13 @@ glimpse(df)
 # mmr: dbl --> int
 # sellingprice: dbl --> int
 
+#df = df %>%
+#  for (colname in colnames(df)) {
+ #   if (is.double(colname)) {
+  #    mutate(colname = as.integer(colname))
+   # }
+  #}
+
 df = df %>%
   mutate(year = as.integer(year), 
          condition = as.integer(condition),
@@ -39,7 +47,21 @@ df = df %>%
 
 
 
+# Cantidad de NaN's en cada variable.
+
+for (colname in colnames(df)) {
+  nan_count = sum(is.nan(df[[colname]]))
+  cat("NaN's de", colname, ":", nan_count, "\n")
+}
+
+
+
 # Cantidad de NA's en cada variable.
+
+for (colname in colnames(df)) {
+  na_count = sum(is.na(df[[colname]]))
+  cat("Na's de", colname, ":", na_count, "\n")
+}
 
 # "year" = 0
 df %>%
@@ -126,16 +148,18 @@ df %>%
 # Chequeo de outliers en las variables numericas.
 
 # Paneo general.
-df %>%
-  summarise(rango_year = range(year, na.rm = T), 
-            rango_condition = range(condition, na.rm = T),
-            rango_odometer = range(odometer, na.rm = T),
-            rango_mmr = range(mmr, na.rm = T),
-            rango_sellingprice = range(sellingprice, na.rm = T))
+
+for (colname in colnames(df)) {
+  if (is.numeric(df[[colname]])) {
+    rango = range(df[[colname]], na.rm = TRUE)
+    cat("Rango", colname, ":", min(rango), "-", max(rango), "\n")
+  }
+}
 
 
 
 # Boxplots de las variables numericas.
+
 p1 = ggplot(data = df) + 
   geom_boxplot(mapping = aes(x = factor(1), y = year)) +
   labs(title = "Year", x = NULL, y = NULL) +
@@ -176,16 +200,16 @@ df = df %>%
 
 # Observacion de valores unicos en cada columna.
 
-unique_make = summarise(df, unique_make = unique(make))
-unique_model = summarise(df, unique_model = unique(model))
-unique_trim = summarise(df, unique_trim = unique(trim))
-unique_body = summarise(df, unique_body = unique(body))
-unique_transmission = summarise(df, unique_transmission = unique(transmission))
-unique_vin = summarise(df, unique_vin = unique(vin))  # A revisar
-unique_state = summarise(df, unique_state = unique(state))
-unique_color = summarise(df, unique_color = unique(color))
-unique_interior = summarise(df, unique_interior = unique(interior))
-unique_seller = summarise(df, unique_seller = unique(seller))
+unique_make = count(df, make, name = "count")
+unique_model = count(df, model, name = "count")
+unique_trim = count(df, trim, name = "count")
+unique_body = count(df, body, name = "count")
+unique_transmission = count(df, transmission, name = "count")
+unique_vin = count(df, vin, name = "count")
+unique_state = count(df, state, name = "count")
+unique_color = count(df, color, name = "count")
+unique_interior = count(df, interior, name = "count")
+unique_seller = count(df, seller, name = "count")
   
 
 
@@ -208,8 +232,7 @@ df = df %>%
 # Unifico formato de la columna "body".
 
 df = df %>%
-  mutate(body = if_else(grepl("coupe", body), "coupe", body),
-         body = if_else(grepl("koup", body), "coupe", body),
+  mutate(body = if_else(grepl("coupe", body) | grepl("koup", body), "coupe", body),
          body = if_else(grepl("wagon", body), "wagon", body),
          body = if_else(grepl("convertible", body), "convertible", body),
          body = if_else(grepl("regular-cab", body), "regular cab", body),
@@ -247,11 +270,26 @@ df = df %>%
 
 
 
+# Analizo las columnas "make" y "model" que son NA.
+
+df_na_make_or_model = df %>%
+  filter(is.na(make) | is.na(model))  # Aproximadamente un 2% del df cumplen esta condicion
+
+
+# Analizo la columna "make"que son NA.
+
+df_na_make = df %>%
+  filter(is.na(make))  # Aproximadamente un 2% del df cumplen esta condicion
+
+
 # Elimino las filas con "make" == NA y "model" = NA.
 
 df = df %>%
   filter(!(is.na(model) & is.na(make)))
 
+
+
+# Chequeo de outliers en las variables numericas.
 
 # Analizo las filas que tienen "odometer" == max(odometer) (supuestos outliers superiores).
 
@@ -270,21 +308,18 @@ df = df %>%
 df_odometer_min = df %>%
   filter(odometer == min(odometer, na.rm = TRUE))
 
-ggplot(data = df_odometer_min, mapping = aes(x=condition, y=sellingprice)) +
-  geom_point()
+ggplot(data = df_odometer_min) +
+  geom_density(mapping = aes(x=condition))
 
-# Elimino las filas con km outliers inferiores con "condition" > 20.
+
+ggplot(data = df_odometer_min) +
+  geom_point(mapping = aes(x=condition, y=sellingprice))
+
+
+# Elimino las filas con km outliers inferiores con "condition" < 20.
 
 df = df %>%
-  filter(!(condition > 20 & odometer == min(odometer, na.rm = TRUE)))
-
-
-
-# Analizo las columnas "make" y "model" que son NA.
-
-df_na_make_or_model = df %>%
-  filter(is.na(make) | is.na(model))  # Aproximadamente un 2% del df cumplen esta condicion
-
+  filter(!(condition < 30 & odometer == min(odometer, na.rm = TRUE)))
 
 
 # Analizo las filas que tienen "sellingprice" < 300.
@@ -292,6 +327,11 @@ df_na_make_or_model = df %>%
 df_sellingp_low = df %>%
   filter(sellingprice < 300)
 
+
+# Analizo patrones en la columna "condition".
+
+ggplot(data = df) +
+  geom_point(mapping = aes(x=condition, y=sellingprice))  # Posiblemente se trate de una escala del 1.0 - 5.0 (no hay valores en los multiplos de 10)
 
 # -------------------------------------------------------------------------------------------------------------------
 
