@@ -31,19 +31,23 @@ glimpse(df)
 # mmr: dbl --> int
 # sellingprice: dbl --> int
 
-#df = df %>%
-#  for (colname in colnames(df)) {
- #   if (is.double(colname)) {
-  #    mutate(colname = as.integer(colname))
-   # }
-  #}
 
 df = df %>%
-  mutate(year = as.integer(year), 
-         condition = as.integer(condition),
-         odometer = as.integer(odometer),
-         mmr = as.integer(mmr),
-         sellingprice = as.integer(sellingprice))
+  mutate(across(where(is.double), as.integer))
+
+
+
+# Analizo patrones en la columna "condition".
+
+ggplot(data = df) +
+  geom_point(mapping = aes(x=condition, y=sellingprice))  # Posiblemente se trate de una escala del 1.0 - 5.0 (no hay valores en los multiplos de 10)
+
+
+
+# Modifico los valores de la columna "condition".
+
+df = df %>%
+  mutate(condition = if_else(condition <= 5, condition * 10, condition))  # Multiplico * 10 los valores <= 5
 
 
 
@@ -62,86 +66,6 @@ for (colname in colnames(df)) {
   na_count = sum(is.na(df[[colname]]))
   cat("Na's de", colname, ":", na_count, "\n")
 }
-
-# "year" = 0
-df %>%
-  summarise(cant_cars = n(),
-            na.year = sum(is.na(year)))
-
-# "make" = 10301
-df %>%
-  summarise(cant_cars = n(),
-            na.make = sum(is.na(make)))
-
-# "model" = 10399
-df %>%
-  summarise(cant_cars = n(),
-            na.model = sum(is.na(model)))
-
-# "trim" = 10651
-df %>%
-  summarise(cant_cars = n(),
-            na.trim = sum(is.na(trim)))
-
-# "body" = 13195
-df %>%
-  summarise(cant_cars = n(),
-            na.body = sum(is.na(body)))
-
-# "transmission" = 65352
-df %>%
-  summarise(cant_cars = n(),
-            na.transmission = sum(is.na(transmission)))
-
-# "vin" = 4
-df %>%
-  summarise(cant_cars = n(),
-            na.vin = sum(is.na(vin)))
-
-# "state" = 0
-df %>%
-  summarise(cant_cars = n(),
-            na.state = sum(is.na(state)))
-
-# "condition" = 11820
-df %>%
-  summarise(cant_cars = n(),
-            na.condition = sum(is.na(condition)))
-
-# "odometer" = 94
-df %>%
-  summarise(cant_cars = n(),
-            na.odometer = sum(is.na(odometer)))
-
-# "color" = 749
-df %>%
-  summarise(cant_cars = n(),
-            na.color = sum(is.na(color)))
-
-# "interior" = 749
-df %>%
-  summarise(cant_cars = n(),
-            na.interior = sum(is.na(interior)))
-
-# "seller" = 0
-df %>%
-  summarise(cant_cars = n(),
-            na.seller = sum(is.na(seller)))
-
-# "mmr" = 38
-df %>%
-  summarise(cant_cars = n(),
-            na.mmr = sum(is.na(mmr)))
-
-# "sellingprice" = 12
-df %>%
-  summarise(cant_cars = n(),
-            na.sellingprice = sum(is.na(sellingprice)))
-
-# "saledate" = 12
-df %>%
-  summarise(cant_cars = n(),
-            na.saledate = sum(is.na(saledate)))
 
 
 
@@ -229,6 +153,15 @@ df = df %>%
 
 
 
+# Unifico formato de la columna "model".
+
+df = df %>%
+  mutate(model = if_else(model == "mazdaspeed mazda3" | model == "mazdaspeed3" | model == "mazdaspeed 3", "mazda3", model),
+         model = if_else(model == "mazdaspeed mazda6", "mazda6", model),
+         model = if_else(model == "mazdaspeed mx-5 miata", "mazda5", model))
+
+
+
 # Unifico formato de la columna "body".
 
 df = df %>%
@@ -247,7 +180,8 @@ df = df %>%
 df_sedan = df %>%  # Observo solo las filas "sedan"
   filter(transmission == "sedan")
 
-df = subset(df, !(transmission == "sedan" & !is.na(transmission)))  # Elimino las filas "sedan"
+df = df %>%
+  filter(!(transmission == "sedan" & !is.na(transmission)))  # Elimino las filas "sedan"
 
 
 # En la columna "vin" hay valores repetidos, cuando se supone que deberian ser todos valores unicos.
@@ -276,16 +210,11 @@ df_na_make_or_model = df %>%
   filter(is.na(make) | is.na(model))  # Aproximadamente un 2% del df cumplen esta condicion
 
 
-# Analizo la columna "make"que son NA.
 
-df_na_make = df %>%
-  filter(is.na(make))  # Aproximadamente un 2% del df cumplen esta condicion
-
-
-# Elimino las filas con "make" == NA y "model" = NA.
+# Elimino las filas con "make" == NA o "model" = NA.
 
 df = df %>%
-  filter(!(is.na(model) & is.na(make)))
+  filter(!(is.na(make) | is.na(model)))
 
 
 
@@ -294,19 +223,18 @@ df = df %>%
 # Analizo las filas que tienen "odometer" == max(odometer) (supuestos outliers superiores).
 
 df_odometer_max = df %>%
-  filter(odometer == max(odometer, na.rm = TRUE))
+  filter(year > 2005 & odometer == max(odometer, na.rm = TRUE))
 
 # Elimino las filas con km outliers superiores con "year" > 2005.
 
 df = df %>%
-  filter(!(year > 2005 & odometer == max(odometer, na.rm = TRUE)))
-
+  filter(!(year > 2005 & odometer == max(odometer, na.rm = TRUE) & !is.na(odometer)))
 
 
 # Analizo las filas que tienen "odometer" == min(odometer) (supuestos outliers inferiores).
 
 df_odometer_min = df %>%
-  filter(odometer == min(odometer, na.rm = TRUE))
+  filter(odometer == min(odometer, na.rm = TRUE) & year < 2014)
 
 ggplot(data = df_odometer_min) +
   geom_density(mapping = aes(x=condition))
@@ -316,10 +244,12 @@ ggplot(data = df_odometer_min) +
   geom_point(mapping = aes(x=condition, y=sellingprice))
 
 
-# Elimino las filas con km outliers inferiores con "condition" < 20.
+
+# Elimino las filas con km outliers inferiores con "odometer" == 1 y "year" < 2014
 
 df = df %>%
-  filter(!(condition < 30 & odometer == min(odometer, na.rm = TRUE)))
+  filter(!(year < 2014 & odometer == min(odometer, na.rm = TRUE) & !is.na(odometer)))
+
 
 
 # Analizo las filas que tienen "sellingprice" < 300.
@@ -328,10 +258,11 @@ df_sellingp_low = df %>%
   filter(sellingprice < 300)
 
 
-# Analizo patrones en la columna "condition".
+# Le saco un 0 la fila que tiene "sellingprice" = 230000 con "mmr" = 22800.
 
-ggplot(data = df) +
-  geom_point(mapping = aes(x=condition, y=sellingprice))  # Posiblemente se trate de una escala del 1.0 - 5.0 (no hay valores en los multiplos de 10)
+df = df %>%
+  mutate(sellingprice = if_else(sellingprice == 230000, 23000, sellingprice))
+
 
 # -------------------------------------------------------------------------------------------------------------------
 
