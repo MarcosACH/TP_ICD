@@ -3,7 +3,32 @@ library(tidyverse)
 
 load("df_cleaned.RData")
 
+### Modelos.
+
+mod1 = lm(df_cleaned, formula = sellingprice  ~ odometer)
+summary(mod1)
+
+mod2 = lm(df_cleaned, formula = sellingprice  ~ odometer + factor(year))
+summary(mod2)
+
+mod3 = lm(df_cleaned, formula = sellingprice  ~ odometer + factor(year) + transmission)
+summary(mod3)
+
+mod4 = lm(df_cleaned, formula = sellingprice ~ odometer + factor(year) + transmission + condition - 1)
+summary(mod4)
+
+mod5 = lm(df_cleaned, formula= mmr ~ poly(year,2,raw=TRUE) + condition * odometer + make + model + transmission + state + color + body)
+summary(mod5)
+
+
+problems(df_cleaned)
 ### Graficos.
+
+sellingp_freq = ggplot(df_cleaned, aes(x = sellingprice)) +
+  geom_histogram(binwidth = 1000, fill = 'blue', color = 'grey', alpha = 0.6) +
+  scale_x_continuous(breaks = seq(0, max(df_cleaned$sellingprice, na.rm = TRUE), by = 5000)) +
+  labs(title = 'Distribucion de los precio de venta', x = 'Precio de venta', y = 'Frecuencia') +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
 #odo_vs_year = ggplot(data = df) +
 #  geom_point(mapping = aes(x = year, y = odometer)) + 
