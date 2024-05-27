@@ -1,6 +1,5 @@
 library(tidyverse)
 library(modelr)
-library(ggplot2)
 library(gridExtra)
 
 ### Importacion del .csv.
@@ -228,8 +227,6 @@ df_odometer_max = df_cleaned %>%
 df_cleaned = df_cleaned %>%
   filter(!(year > 2005 & odometer == max(odometer, na.rm = TRUE) & !is.na(odometer)))
 
-
-
 # Analizamos las filas que tienen "odometer" == min(odometer) (supuestos outliers inferiores).
 
 df_odometer_min = df_cleaned %>%
@@ -266,6 +263,13 @@ df_sellingp_low = df_sellingp_low %>%
 
 df_cleaned = df_cleaned %>%
   filter(!((year > 2006 & sellingprice < 300 | sellingprice == 1) & !is.na(sellingprice)))
+
+
+
+# Eliminamos los NA's de "odometer", "mmr", "sellingprice" y "saledate" (variables significativas para el modelado)
+
+df_cleaned = df_cleaned %>%
+  filter(!(is.na(odometer) | is.na(mmr) | is.na(sellingprice) | is.na(saledate) | is.na(body)))
 
 
 
@@ -308,9 +312,26 @@ update_transmissions = function(df_cleaned, df_transmission) {
   return(df_cleaned)
 }
 
+
+
 # Actualizacion de "df_cleaned".
 
 df_cleaned = update_transmissions(df_cleaned, df_transmission)
+
+
+
+# Reemplazamos los NA's de "condition" con la media de cada año.
+
+df_cleaned = df_cleaned %>%
+  group_by(year) %>%
+  mutate(condition = if_else(is.na(condition), median(condition, na.rm = TRUE), condition)) %>%
+  ungroup()
+
+
+# Eliminamos los autos que tienen menos de 50 kilometros (nos concentramos en autos usados)
+
+df_cleaned = df_cleaned %>%
+  filter(!(odometer <= 50 & !is.na(sellingprice)))
 
 
 # -------------------------------------------------------------------------------------------------------------------
