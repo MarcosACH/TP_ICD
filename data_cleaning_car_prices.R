@@ -2,6 +2,7 @@ library(tidyverse)
 library(modelr)
 library(gridExtra)
 
+
 ### Importacion del .csv.
 
 df = read_csv("car_prices.csv")
@@ -222,7 +223,7 @@ grid.arrange(p1, p2, p3, p4, p5, ncol = 2)
 df_odometer_max = df_cleaned %>%
   filter(year > 2005 & odometer == max(odometer, na.rm = TRUE))
 
-# Eliminamos las filas con km outliers superiores con "year" > 2005.
+# Eliminamos las filas con kilometros outliers superiores con "year" > 2005.
 
 df_cleaned = df_cleaned %>%
   filter(!(year > 2005 & odometer == max(odometer, na.rm = TRUE) & !is.na(odometer)))
@@ -238,10 +239,15 @@ ggplot(data = df_odometer_min) +
 ggplot(data = df_odometer_min) +
   geom_point(mapping = aes(x=condition, y=sellingprice))
 
-# Eliminamos las filas con km outliers inferiores con "odometer" == 1 y "year" < 2014
+# Eliminamos las filas con kilometros outliers inferiores con "odometer" == 1 y "year" < 2014.
 
 df_cleaned = df_cleaned %>%
   filter(!(year < 2014 & odometer == min(odometer, na.rm = TRUE) & !is.na(odometer)))
+
+# Eliminamos los autos que tienen "odometer" <= 50 (nos enfocamos en autos usados).
+
+df_cleaned = df_cleaned %>%
+  filter(!(odometer <= 50 & !is.na(sellingprice)))
 
 
 
@@ -266,7 +272,7 @@ df_cleaned = df_cleaned %>%
 
 
 
-# Eliminamos los NA's de "odometer", "mmr", "sellingprice" y "saledate" (variables significativas para el modelado)
+# Eliminamos los NA's de "odometer", "mmr", "sellingprice" y "saledate" (variables significativas para el modelado).
 
 df_cleaned = df_cleaned %>%
   filter(!(is.na(odometer) | is.na(mmr) | is.na(sellingprice) | is.na(saledate) | is.na(body)))
@@ -312,15 +318,13 @@ update_transmissions = function(df_cleaned, df_transmission) {
   return(df_cleaned)
 }
 
-
-
-# Actualizacion de "df_cleaned".
+# Actualizamos la columna "transmission" de "df_cleaned".
 
 df_cleaned = update_transmissions(df_cleaned, df_transmission)
 
 
 
-# Reemplazamos los NA's de "condition" con la media de cada año.
+# Reemplazamos los NA's de "condition" con la mediana de cada año.
 
 df_cleaned = df_cleaned %>%
   group_by(year) %>%
@@ -328,10 +332,17 @@ df_cleaned = df_cleaned %>%
   ungroup()
 
 
-# Eliminamos los autos que tienen menos de 50 kilometros (nos concentramos en autos usados)
+
+# Convertimos la columna "saledate" a tipo "DateTime" y extraemos el día de la semana, día del mes, mes y año.
 
 df_cleaned = df_cleaned %>%
-  filter(!(odometer <= 50 & !is.na(sellingprice)))
+  filter(!(grepl("^\\d", saledate) | is.na(saledate))) %>%  # Eliminamos todas las fechas NA y todas las mal ingresadas
+  mutate(saledate = str_replace(saledate, "\\s\\d{2}:\\d{2}:\\d{2} GMT[+-]\\d{4} \\(.*\\)$", ""),  # Eliminamos la hora y zona horaria de la fecha
+         saledate = strptime(saledate, format="%a %b %d %Y"),
+         sale_day_of_week = format(saledate, "%a"),
+         sale_day_of_month = format(saledate, "%d"),
+         sale_month = format(saledate, "%m"),
+         sale_year = format(saledate, "%Y"))
 
 
 # -------------------------------------------------------------------------------------------------------------------
