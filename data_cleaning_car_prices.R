@@ -351,6 +351,11 @@ df_cleaned = df_cleaned %>%
 df_cleaned = df_cleaned %>%
   mutate(across(where(is.double), as.integer))
 
+df_cleaned = df_cleaned %>%
+  mutate(sale_day_of_month = as.integer(sale_day_of_month),
+         sale_month = as.integer(sale_month),
+         sale_year = as.integer(sale_year))
+
 
 # -------------------------------------------------------------------------------------------------------------------
 
