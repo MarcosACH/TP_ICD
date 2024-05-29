@@ -247,7 +247,7 @@ df_cleaned = df_cleaned %>%
 # Eliminamos los autos que tienen "odometer" <= 50 (nos enfocamos en autos usados).
 
 df_cleaned = df_cleaned %>%
-  filter(!(odometer <= 50 & !is.na(sellingprice)))
+  filter(!(odometer <= 50 & !is.na(odometer)))
 
 
 
@@ -328,7 +328,7 @@ df_cleaned = update_transmissions(df_cleaned, df_transmission)
 
 df_cleaned = df_cleaned %>%
   group_by(year) %>%
-  mutate(condition = if_else(is.na(condition), median(condition, na.rm = TRUE), condition)) %>%
+  mutate(condition = if_else(is.na(condition), floor(median(condition, na.rm = TRUE)), condition)) %>%
   ungroup()
 
 
@@ -343,6 +343,13 @@ df_cleaned = df_cleaned %>%
          sale_day_of_month = format(saledate, "%d"),
          sale_month = format(saledate, "%m"),
          sale_year = format(saledate, "%Y"))
+
+
+
+# Hacemos un type casting para terminar de establecer correctamente los tipos de dato de las variables numericas.
+
+df_cleaned = df_cleaned %>%
+  mutate(across(where(is.double), as.integer))
 
 
 # -------------------------------------------------------------------------------------------------------------------
