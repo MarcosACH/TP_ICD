@@ -57,7 +57,7 @@ sellingp_freq = ggplot(data = df_cleaned) +
         axis.title = element_text(size=14),
         plot.title = element_text(size=18, hjust=0.5)) +
   scale_x_continuous(breaks = seq(0, 150000, 50000)) +
-  labs(x = "Precio de venta [USD]", y = "Frecuencia", title = "Distribución de los precios de venta")
+  labs(x = "Precio de venta [USD]", y = "Frecuencia", title = "Distribución de los precios de venta de los vehículos")
 sellingp_freq
 
 
@@ -68,7 +68,7 @@ sellingp_density = ggplot(data = df_cleaned) +
         axis.title = element_text(size=14),
         plot.title = element_text(size=18, hjust=0.5)) +
   scale_x_continuous(breaks = seq(0, 150000, 50000)) +
-  labs(x = "Precio de venta [USD]", y = "Frecuencia", title = "Distribución de los precios de venta")
+  labs(x = "Precio de venta [USD]", y = "Frecuencia", title = "Distribución de los precios de venta de los vehículos")
 sellingp_density
 
 
@@ -84,7 +84,7 @@ sellingp_vs_transmission_box = ggplot(data = df_cleaned, mapping = aes(x=transmi
   theme(axis.line = element_line(color="black"), 
         axis.title = element_text(size=14),
         plot.title = element_text(size=18, hjust=0.5)) +
-  labs(x = "Transmisión del auto", y = "Precio de venta [USD]", title = "Precio de venta del vehículo según su transmisión")
+  labs(x = "Transmisión del vehículo", y = "Precio de venta [USD]", title = "Precio de venta del vehículo según su transmisión")
 sellingp_vs_transmission_box
 
 
@@ -96,54 +96,38 @@ sellingp_vs_transmission_violin = ggplot(data = df_cleaned, mapping = aes(x=tran
   theme(axis.line = element_line(color="black"), 
         axis.title = element_text(size=14),
         plot.title = element_text(size=18, hjust=0.5)) +
-  labs(x = "Transmisión del auto", y = "Precio de venta [USD]", title = "Precio de venta del vehículo según su transmisión")
+  labs(x = "Transmisión del vehículo", y = "Precio de venta [USD]", title = "Precio de venta del vehículo según su transmisión")
 sellingp_vs_transmission_violin
 
 
 
 sellingp_vs_body = ggplot(data = df_cleaned) + 
-  geom_boxplot(mapping=aes(x = body, y = sellingprice)) + 
-  labs(x = "Tipo de vehiculo", y = "Precio de venta [USD]") + 
-  labs(title = "Precio de venta en base al tipo de auto") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-
+  geom_boxplot(mapping = aes(x=body, y=sellingprice), color="#5d9b9b") +
+  theme(axis.line = element_line(color="black"), 
+        axis.title = element_text(size=14),
+        plot.title = element_text(size=18, hjust=0.5),
+        axis.text.x = element_text(angle=45, hjust=1)) +
+  labs(x = "Tipo de vehículo", y = "Precio de venta [USD]", title = "Precio de venta del vehículo según su tipo")
 sellingp_vs_body
 
 
 
-# podriamos agrupar cada 5 años en otro data frame y hacer un boxplot
-sellingp_vs_year = ggplot(data=df_cleaned) + 
-  geom_boxplot(mapping=aes(x = factor(year), y = sellingprice)) + 
-  labs(x = "Año del vehiculo", y = "Precio de venta [USD]") + 
-  labs(title = "Precio de venta en base al año del auto") + 
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-
+sellingp_vs_year = ggplot(data = df_cleaned) + 
+  geom_boxplot(mapping = aes(x=factor(year), y=sellingprice), color="#5d9b9b") + 
+  theme(axis.line = element_line(color="black"), 
+        axis.title = element_text(size=14),
+        plot.title = element_text(size=18, hjust=0.5),
+        axis.text.x = element_text(angle=45, hjust=1)) +
+  labs(x = "Año del vehículo", y = "Precio de venta [USD]", title = "Precio de venta del vehículo según su año de fabricación")
 sellingp_vs_year
 
 
 
-sellingp_vs_make = ggplot(data=df_cleaned) + 
-  geom_boxplot(mapping=aes(x = make, y = sellingprice)) + 
-  labs(x = "Marca del vehiculo", y = "Precio de venta [USD]") + 
-  labs(title = "Precio de venta en base a la marca del auto") + 
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))
-
+sellingp_vs_make = ggplot(data = df_cleaned) + 
+  geom_boxplot(mapping = aes(x=make, y=sellingprice), color="#5d9b9b") + 
+  theme(axis.line = element_line(color="black"), 
+        axis.title = element_text(size=14),
+        plot.title = element_text(size=18, hjust=0.5),
+        axis.text.x = element_text(angle=90, hjust=1)) +
+  labs(x = "Marca del vehículo", y = "Precio de venta [USD]", title = "Precio de venta del vehículo según su marca")
 sellingp_vs_make
-
-
-
-sellingp_vs_state = ggplot(data=df_cleaned) + 
-  geom_boxpplot(mapping=aes(x = state, y = sellingprice)) + 
-  labs(x = "Ubicacion de consecionaria", y = "Precio de venta [USD]") + 
-  labs(title = "Precio de venta en base a la ubicacion de la consecionaria") + 
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))
-
-sellingp_vs_state
-
-
-
-condition_vs_year <- ggplot(data=df_cleaned) + 
-  geom_boxplot(mapping=aes(y= condition, x = factor(year)),  alpha=0.4) +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))
-
-condition_vs_year
