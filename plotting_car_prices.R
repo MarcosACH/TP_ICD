@@ -1,5 +1,10 @@
 library(tidyverse)
 library(modelr)
+library(ggrepel)
+library(cowplot)
+library(magick)
+library(ggimage)
+library(tools)
 
 
 load("df_cleaned.RData")
@@ -106,7 +111,7 @@ sellingp_vs_body = ggplot(data = df_cleaned) +
   theme(axis.line = element_line(color="black"), 
         axis.title = element_text(size=14),
         plot.title = element_text(size=18, hjust=0.5),
-        axis.text.x = element_text(angle=45, hjust=1)) +
+        axis.text.x = element_text(size=11, angle=45, hjust=1)) +
   labs(x = "Tipo de vehículo", y = "Precio de venta [USD]", title = "Precio de venta del vehículo según su tipo")
 sellingp_vs_body
 
@@ -128,6 +133,42 @@ sellingp_vs_make = ggplot(data = df_cleaned) +
   theme(axis.line = element_line(color="black"), 
         axis.title = element_text(size=14),
         plot.title = element_text(size=18, hjust=0.5),
-        axis.text.x = element_text(angle=90, hjust=1)) +
+        axis.text.x = element_text(size=11, angle=90, hjust=1)) +
   labs(x = "Marca del vehículo", y = "Precio de venta [USD]", title = "Precio de venta del vehículo según su marca")
 sellingp_vs_make
+
+
+marcas_frecuentes = sort(table(df_cleaned$make), decreasing = TRUE)
+df_nueve_marcas_frecuentes = as.data.frame(head(marcas_frecuentes, 9))
+colnames(df_nueve_marcas_frecuentes) = c("Marca", "Ventas")
+
+df_sin_top9 = df_cleaned %>%
+  filter(!(df_cleaned$make %in% df_nueve_marcas_frecuentes$Marca))
+
+n_sin_top9 = count(df_sin_top9)
+
+df_otras = data.frame(Marca="Otras", Ventas=n_sin_top9$n)
+df_nueve_marcas_frecuentes = rbind(df_nueve_marcas_frecuentes, df_otras)
+df_nueve_marcas_frecuentes = df_nueve_marcas_frecuentes %>%
+  mutate(porcentaje = (Ventas/sum(Ventas))*100) %>%
+  arrange(desc(Marca)) %>%
+  mutate(ypos = cumsum(Ventas) - 0.5 * Ventas) %>%
+  mutate(Marca = as.character(Marca)) %>%
+  mutate(Marca = toTitleCase(Marca))
+
+
+circular_make = ggplot(df_nueve_marcas_frecuentes, aes(x="", y=Ventas, fill=porcentaje))+
+  geom_bar(width=1, stat="identity", color="white")+
+  coord_polar("y", start=0)+
+  theme_void()+
+  geom_label_repel(aes(y=ypos, label=sprintf("%s (%.1f%%)", Marca, porcentaje)),
+                   color="black", size=4, show.legend=FALSE,
+                   nudge_x=1, nudge_y=0.5, box.padding=0.3, point.padding=0.3,
+                   segment.color='grey50', segment.size=0.5)+
+  scale_fill_gradient(low="#5d9b9b", high="lightblue")+
+  labs(title = "Distribución de las marcas con mayor cantidad de ventas")+
+  theme(legend.position = "none", 
+        plot.title = element_text(size=20, hjust=0.5),
+        panel.background = element_rect(fill="white", color=NA),
+        plot.background = element_rect(fill="white", color=NA))
+circular_make
