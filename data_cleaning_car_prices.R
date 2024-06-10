@@ -12,9 +12,9 @@ df = read_csv("car_prices.csv")
 
 
 ### Limpieza de datos.
-# Exploracion del data frame.
+# Exploracion del Data Frame.
 
-summary(df)  # summary() solo nos informa los NA's de las variables numericas.
+summary(df)  # summary() solo nos informa los NA's de las variables numericas
 glimpse(df)
 str(df)
 problems(df)
@@ -23,7 +23,6 @@ problems(df)
 
 # Chequeo de errores estructurales.
 
-glimpse(df)
 # Type casting:
 # year: dbl --> int
 # condition: dbl --> int
@@ -33,18 +32,6 @@ glimpse(df)
 
 df_cleaned = df %>%
   mutate(across(where(is.double), as.integer))
-
-
-
-# Analizamos patrones en la columna "condition".
-
-ggplot(data = df_cleaned) +
-  geom_point(mapping = aes(x=condition, y=sellingprice))  # Posiblemente se trate de una escala del 1.0 - 5.0 (no hay valores en los multiplos de 10)
-
-# Modificamos los valores de la columna "condition".
-
-df_cleaned = df_cleaned %>%
-  mutate(condition = if_else(condition <= 5, condition * 10, condition))  # Multiplico * 10 los valores <= 5
 
 
 
@@ -66,16 +53,29 @@ for (colname in colnames(df_cleaned)) {
 
 
 
-# Chequeo de irregularidades en las variables de tipo "chr".
+# Analizamos patrones en la columna "condition".
 
-exclude_columns = c("vin", "saledate")  # Columnas que no corresponde cambiarlas a tipo "chr"
+ggplot(data = df_cleaned) +
+  geom_point(mapping = aes(x=condition, y=sellingprice))  # Posiblemente se trate de una escala del 1.0 - 5.0 (no hay valores en los multiplos de 10)
+
+
+# Modificamos los valores de la columna "condition" para que sean valores del 10 - 50.
 
 df_cleaned = df_cleaned %>%
-  mutate(across(where(is.character) & !all_of(exclude_columns), tolower))  # Paso las columnas a minuscula
+  mutate(condition = if_else(condition <= 5, condition * 10, condition))  # Multiplico * 10  a los valores <= 5
 
 
 
-# Observacion de valores unicos en cada columna.
+# Chequeo de irregularidades en las variables de tipo "chr".
+
+exclude_columns = c("vin", "saledate")  # Columnas que no corresponde cambiarlas a minuscula
+
+df_cleaned = df_cleaned %>%
+  mutate(across(where(is.character) & !all_of(exclude_columns), tolower))  # Paso las columnas de tipo "chr" a minuscula
+
+
+
+# Observacion de valores unicos en cada columna categorica.
 
 unique_make = count(df_cleaned, make, name = "count")
 unique_model = count(df_cleaned, model, name = "count")
@@ -134,7 +134,7 @@ df_sedan = df_cleaned %>%  # Observamos solo las filas "sedan"
   filter(transmission == "sedan")
 
 df_cleaned = df_cleaned %>%
-  filter(!(transmission == "sedan" & !is.na(transmission)))  # Eliminamos las filas "sedan"
+  filter(!(transmission == "sedan" & !is.na(transmission)))  # Eliminamos las filas de "transmission" = sedan"
 
 
 
@@ -160,12 +160,12 @@ df_cleaned = df_cleaned %>%
 
 
 
-# Analizamos las columnas "make" y "model" que son NA.
+# Analizamos las observaciones de "make" y "model" que son NA.
 
 df_na_make_or_model = df_cleaned %>%
-  filter(is.na(make) | is.na(model))  # Aproximadamente un 2% del df_cleaned cumplen esta condicion
+  filter(is.na(make) | is.na(model))  # Aproximadamente un 2% del Data Frame cumple con esta condicion
 
-# Eliminamos las filas con "make" == NA o "model" = NA.
+# Eliminamos las observaciones con "make" == NA o "model" = NA.
 
 df_cleaned = df_cleaned %>%
   filter(!(is.na(make) | is.na(model)))
@@ -216,19 +216,18 @@ grid.arrange(p1, p2, p3, p4, p5, ncol = 2)
 
 
 
-# Chequeo de outliers en las variables numericas.
-
-# Analizamos las filas que tienen "odometer" == max(odometer) (supuestos outliers superiores).
+# Analizamos las observaciones que tienen "odometer" == max(odometer), supuestos outliers superiores.
 
 df_odometer_max = df_cleaned %>%
   filter(year > 2005 & odometer == max(odometer, na.rm = TRUE))
 
-# Eliminamos las filas con kilometros outliers superiores con "year" > 2005.
+# Eliminamos las observaciones con kilometros outliers superiores con "year" > 2005.
 
 df_cleaned = df_cleaned %>%
   filter(!(year > 2005 & odometer == max(odometer, na.rm = TRUE) & !is.na(odometer)))
 
-# Analizamos las filas que tienen "odometer" == min(odometer) (supuestos outliers inferiores).
+
+# Analizamos las observaciones que tienen "odometer" == min(odometer), supuestos outliers inferiores.
 
 df_odometer_min = df_cleaned %>%
   filter(odometer == min(odometer, na.rm = TRUE) & year < 2014)
@@ -239,10 +238,11 @@ ggplot(data = df_odometer_min) +
 ggplot(data = df_odometer_min) +
   geom_point(mapping = aes(x=condition, y=sellingprice))
 
-# Eliminamos las filas con kilometros outliers inferiores con "odometer" == 1 y "year" < 2014.
+# Eliminamos las observaciones con kilometros outliers inferiores con "odometer" == 1 y "year" < 2014.
 
 df_cleaned = df_cleaned %>%
   filter(!(year < 2014 & odometer == min(odometer, na.rm = TRUE) & !is.na(odometer)))
+
 
 # Eliminamos los autos que tienen "odometer" <= 50 (nos enfocamos en autos usados).
 
@@ -251,12 +251,13 @@ df_cleaned = df_cleaned %>%
 
 
 
-# Eliminamos un 0 la fila que tiene "sellingprice" = 230000 con "mmr" = 22800.
+# Eliminamos un 0 a la observacion que tiene "sellingprice" = 230000 con "mmr" = 22800 (claro error).
 
 df_cleaned = df_cleaned %>%
   mutate(sellingprice = if_else(sellingprice == 230000, 23000, sellingprice))
 
-# Analizamos las filas que tienen "sellingprice" < 300.
+
+# Analizamos las observaciones que tienen "sellingprice" < 300.
 
 df_sellingp_low = df_cleaned %>%
   filter(sellingprice < 300)
@@ -265,7 +266,7 @@ df_sellingp_low = df_sellingp_low %>%
   group_by(year) %>%
   summarise(count = n())
 
-# Eliminamos las filas con "year" > 2006 y "sellingprice" < 300, o "sellingprice" == 1.
+# Eliminamos las observaciones con "year" > 2006 y "sellingprice" < 300, o "sellingprice" == 1.
 
 df_cleaned = df_cleaned %>%
   filter(!((year > 2006 & sellingprice < 300 | sellingprice == 1) & !is.na(sellingprice)))
@@ -293,6 +294,7 @@ df_transmission = df_cleaned %>%
             add_automatic = if_else(is.nan(percent_automatic), count_nas, floor(count_nas * percent_automatic)),
             add_manual = if_else(is.nan(percent_automatic), 0, ceiling(count_nas * percent_manual)))
 
+
 # Funcion que convierte a todos los NA's de "transmission" a "automatic" o "manual" respecto a la dicha proporcion.
 
 update_transmissions = function(df_cleaned, df_transmission) {
@@ -315,8 +317,10 @@ update_transmissions = function(df_cleaned, df_transmission) {
       }
     }
   }
+  
   return(df_cleaned)
 }
+
 
 # Actualizamos la columna "transmission" de "df_cleaned".
 
@@ -349,10 +353,8 @@ df_cleaned = df_cleaned %>%
 # Hacemos un type casting para terminar de establecer correctamente los tipos de dato de las variables numericas.
 
 df_cleaned = df_cleaned %>%
-  mutate(across(where(is.double), as.integer))
-
-df_cleaned = df_cleaned %>%
-  mutate(sale_day_of_month = as.integer(sale_day_of_month),
+  mutate(across(where(is.double), as.integer),
+         sale_day_of_month = as.integer(sale_day_of_month),
          sale_month = as.integer(sale_month),
          sale_year = as.integer(sale_year))
 
