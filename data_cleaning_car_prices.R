@@ -363,6 +363,6 @@ df_cleaned = df_cleaned %>%
 
 
 # Fin de limpieza de datos.
-# Guardado del data frame en un archivo .RData.
+# Guardado del Data Frame en un archivo ".RData".
 
 save(df_cleaned, file = "df_cleaned.RData")
