@@ -6,11 +6,18 @@ library(magick)
 library(ggimage)
 library(tools)
 
+### Importacion de "df_cleaned" y de "rendimiento_concesionarias".
 
 load("df_cleaned.RData")
+load("rendimiento_concesionarias.RData")
 
 
+# -------------------------------------------------------------------------------------------------------------------
 
+
+### Analisis de graficos.
+
+# Relacion entre el precio de venta del vehículo y su kilometraje.
 
 sellingp_vs_odometer = ggplot(data = df_cleaned) + 
   geom_point(mapping = aes(x=odometer, y=sellingprice), color="#5d9b9b") +
@@ -23,6 +30,8 @@ sellingp_vs_odometer
 
 
 
+# Distribucion y comparacion del precio de venta del vehículo por su unidad de condicion.
+
 sellingp_vs_condition = ggplot(data = df_cleaned) + 
   geom_boxplot(mapping = aes(x=factor(condition), y=sellingprice), color="#5d9b9b") +
   theme(axis.line = element_line(color="black"), 
@@ -34,6 +43,8 @@ sellingp_vs_condition
 
 
 
+# Distribucion y comparacion del precio de venta del vehículo por dia de la semana de la venta.
+
 sellingp_vs_sale_day_of_week = ggplot(data = df_cleaned) +
   geom_boxplot(mapping = aes(x=factor(sale_day_of_week, levels=c("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")), y=sellingprice), color="#5d9b9b") +
   theme(axis.line = element_line(color="black"), 
@@ -43,6 +54,8 @@ sellingp_vs_sale_day_of_week = ggplot(data = df_cleaned) +
 sellingp_vs_sale_day_of_week
 
 
+
+# Comparacion de las cantidades de ventas de vehículos totales por dia de la semana de la venta.
 
 sale_day_of_week_quantity = ggplot(data = df_cleaned) +
   geom_bar(mapping = aes(x=factor(sale_day_of_week, levels=c("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"))), fill="#5d9b9b") +
@@ -56,6 +69,8 @@ sale_day_of_week_quantity
 
 
 
+# Distribucion del precio de venta del vehículo.
+
 sellingp_freq = ggplot(data = df_cleaned) +
   geom_histogram(mapping = aes(x=sellingprice), binwidth=1000, fill="#5d9b9b", color="grey30", alpha=0.6) +
   theme(axis.line = element_line(color="black"), 
@@ -67,6 +82,8 @@ sellingp_freq
 
 
 
+# Distribucion (densidad) del precio de venta del vehículo.
+
 sellingp_density = ggplot(data = df_cleaned) +
   geom_density(mapping = aes(x=sellingprice), bw=1000, fill="#5d9b9b", color="grey30", alpha=0.6) +
   theme(axis.line = element_line(color="black"), 
@@ -77,6 +94,8 @@ sellingp_density = ggplot(data = df_cleaned) +
 sellingp_density
 
 
+
+# Distribucion y comparacion del precio de venta del vehículo por su transmision.
 
 median_sellingp_by_transmission = df_cleaned %>%
   group_by(transmission) %>%
@@ -94,6 +113,8 @@ sellingp_vs_transmission_box
 
 
 
+# Distribucion y comparacion del precio de venta del vehículo por su transmision.
+
 sellingp_vs_transmission_violin = ggplot(data = df_cleaned, mapping = aes(x=transmission, y=sellingprice)) + 
   geom_jitter(color="#5d9b9b", alpha=0.2) + 
   geom_violin(draw_quantiles=c(0.25, 0.5, 0.75), color="#5d9b9b") +
@@ -106,6 +127,8 @@ sellingp_vs_transmission_violin
 
 
 
+# Distribucion y comparacion del precio de venta del vehículo por su tipo.
+
 sellingp_vs_body = ggplot(data = df_cleaned) + 
   geom_boxplot(mapping = aes(x=body, y=sellingprice), color="#5d9b9b") +
   theme(axis.line = element_line(color="black"), 
@@ -116,6 +139,8 @@ sellingp_vs_body = ggplot(data = df_cleaned) +
 sellingp_vs_body
 
 
+
+# Distribucion y comparacion del precio de venta del vehículo por su año de fabricacion.
 
 sellingp_vs_year = ggplot(data = df_cleaned) + 
   geom_boxplot(mapping = aes(x=factor(year), y=sellingprice), color="#5d9b9b") + 
@@ -128,15 +153,20 @@ sellingp_vs_year
 
 
 
+# Distribucion y comparacion del precio de venta del vehículo por su fabricante
+
 sellingp_vs_make = ggplot(data = df_cleaned) + 
   geom_boxplot(mapping = aes(x=make, y=sellingprice), color="#5d9b9b") + 
   theme(axis.line = element_line(color="black"), 
         axis.title = element_text(size=14),
         plot.title = element_text(size=18, hjust=0.5),
         axis.text.x = element_text(size=11, angle=90, hjust=1)) +
-  labs(x = "Marca del vehículo", y = "Precio de venta [USD]", title = "Precio de venta del vehículo según su marca")
+  labs(x = "Fabricante del vehículo", y = "Precio de venta [USD]", title = "Precio de venta del vehículo según su fabricante")
 sellingp_vs_make
 
+
+
+# Composicion de los fabricantes de los vehículos.
 
 marcas_frecuentes = sort(table(df_cleaned$make), decreasing = TRUE)
 df_nueve_marcas_frecuentes = as.data.frame(head(marcas_frecuentes, 9))
@@ -172,3 +202,30 @@ circular_make = ggplot(df_nueve_marcas_frecuentes, aes(x="", y=Ventas, fill=porc
         panel.background = element_rect(fill="white", color=NA),
         plot.background = element_rect(fill="white", color=NA))
 circular_make
+
+
+
+# Relacion entre las predicciones del modelo de "sellingprice" y el precio de venta del vehículo.
+
+pred_vs_sellingp = ggplot(data = df_cleaned) +
+  geom_point(mapping = aes(x=sellingprice, y=pred), color="#5d9b9b") +
+  theme(axis.line = element_line(color="black"), 
+        axis.title = element_text(size=14),
+        plot.title = element_text(size=18, hjust=0.5)) +
+  labs(x = "Precio de venta [USD]", y = "Predicciones del modelo", title = "Predicciones del modelo de 'sellingprice' según el precio de venta del vehículo")
+pred_vs_sellingp
+
+
+
+# Relacion entre los residuos del modelo de "sellingprice" y el precio de venta del vehículo.
+
+resid_vs_sellingp = ggplot(data = df_cleaned) +
+  geom_point(mapping = aes(x=sellingprice, y=resid), color="#5d9b9b") +
+  theme(axis.line = element_line(color="black"), 
+        axis.title = element_text(size=14),
+        plot.title = element_text(size=18, hjust=0.5)) +
+  labs(x = "Precio de venta [USD]", y = "Residuos del modelo", title = "Residuos del modelo de 'sellingprice' según el precio de venta del vehículo")
+resid_vs_sellingp
+
+
+# Fin del analisis de graficos.
