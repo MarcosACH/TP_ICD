@@ -10,7 +10,19 @@ load("df_cleaned.RData")
 # -------------------------------------------------------------------------------------------------------------------
 
 
-mod1 = lm(df_cleaned, formula = sellingprice  ~ odometer- 1)  # RSE: 7812, MRS: 0.3493
+mod17 = lm(df_cleaned_prueba_definitoria, formula = sellingprice  ~ odometer + seller - 1)  # RSE: 6312, MRS: 0.8684
+summary(mod17)
+
+# Grafico de residuos vs predicciones.
+plot(mod17, which=1)
+
+mod18 = lm(df_cleaned_prueba_definitoria, formula = sellingprice  ~ odometer * condition + factor(year) + make + body + seller - 1)  # RSE: 4630, MRS: 0.9292
+summary(mod18)
+
+# Grafico de residuos vs predicciones.
+plot(mod18, which=1)
+
+mod1 = lm(df_cleaned, formula = sellingprice  ~ odometer - 1)  # RSE: 7812, MRS: 0.3493
 summary(mod1)
 
 # Grafico de residuos vs predicciones.
@@ -194,3 +206,28 @@ ggplot(data = ventas_financial) +
 
 save(df_cleaned, file = "df_cleaned.RData")
 save(rendimiento_concesionarias, file = "rendimiento_concesionarias.RData")
+
+
+
+# -------------------------------------------------------------------------------------------------------------------
+# Pruebas:
+
+df_cleaned_prueba = df_cleaned %>%
+  group_by(seller) %>%
+  summarise(count = n()) %>%
+  filter(count >= 200) %>%
+  select(seller)
+
+df_cleaned_prueba_definitoria = df_cleaned %>%
+  inner_join(df_cleaned_prueba, by = "seller")
+
+coefficients = coef(mod18)
+coeff_names = names(coefficients)
+
+seller_coeff_names = coeff_names[grep("^seller", coeff_names)]
+
+seller_coeffs = coefficients[seller_coeff_names]
+
+highest_coef = which.max(seller_coeffs)
+
+seller_name = names(seller_coeffs)[highest_coef]
