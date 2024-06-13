@@ -3,7 +3,7 @@ library(modelr)
 library(gridExtra)
 
 
-### Importacion del .csv.
+### Importacion del ".csv".
 
 df = read_csv("car_prices.csv")
 
@@ -56,7 +56,7 @@ for (colname in colnames(df_cleaned)) {
 # Analizamos patrones en la columna "condition".
 
 ggplot(data = df_cleaned) +
-  geom_point(mapping = aes(x=condition, y=sellingprice))  # Posiblemente se trate de una escala del 1.0 - 5.0 (no hay valores en los multiplos de 10)
+  geom_point(mapping = aes(x=condition, y=sellingprice))  # Posiblemente se trate de una escala del 1.0 al 5.0 o del 10 al 50 (no hay valores en los multiplos de 10)
 
 
 # Modificamos los valores de la columna "condition" para que sean valores del 10 - 50.
@@ -227,27 +227,11 @@ df_cleaned = df_cleaned %>%
   filter(!(year > 2005 & odometer == max(odometer, na.rm = TRUE) & !is.na(odometer)))
 
 
-# Analizamos las observaciones que tienen "odometer" == min(odometer), supuestos outliers inferiores.
 
-df_odometer_min = df_cleaned %>%
-  filter(odometer == min(odometer, na.rm = TRUE) & year < 2014)
-
-ggplot(data = df_odometer_min) +
-  geom_density(mapping = aes(x=condition))
-
-ggplot(data = df_odometer_min) +
-  geom_point(mapping = aes(x=condition, y=sellingprice))
-
-# Eliminamos las observaciones con kilometros outliers inferiores con "odometer" == 1 y "year" < 2014.
+# Eliminamos los autos que tienen "odometer" <= 100 (nos enfocamos en autos usados).
 
 df_cleaned = df_cleaned %>%
-  filter(!(year < 2014 & odometer == min(odometer, na.rm = TRUE) & !is.na(odometer)))
-
-
-# Eliminamos los autos que tienen "odometer" <= 50 (nos enfocamos en autos usados).
-
-df_cleaned = df_cleaned %>%
-  filter(!(odometer <= 50 & !is.na(odometer)))
+  filter(!(odometer <= 100 & !is.na(odometer)))
 
 
 
@@ -266,17 +250,17 @@ df_sellingp_low = df_sellingp_low %>%
   group_by(year) %>%
   summarise(count = n())
 
-# Eliminamos las observaciones con "year" > 2006 y "sellingprice" < 300, o "sellingprice" == 1.
+# Eliminamos las observaciones con "sellingprice" < 300.
 
 df_cleaned = df_cleaned %>%
-  filter(!((year > 2006 & sellingprice < 300 | sellingprice == 1) & !is.na(sellingprice)))
+  filter(!(sellingprice < 300 & !is.na(sellingprice)))
 
 
 
-# Eliminamos los NA's de "odometer", "mmr", "sellingprice" y "saledate" (variables significativas para el modelado).
+# Eliminamos los NA's de "odometer", "sellingprice", "saledate", "body" y "color" (variables significativas para el modelado, pocos valores NA).
 
 df_cleaned = df_cleaned %>%
-  filter(!(is.na(odometer) | is.na(mmr) | is.na(sellingprice) | is.na(saledate) | is.na(body)))
+  filter(!(is.na(odometer) | is.na(sellingprice) | is.na(saledate) | is.na(body) | is.na(color)))
 
 
 
@@ -332,7 +316,7 @@ df_cleaned = update_transmissions(df_cleaned, df_transmission)
 
 df_cleaned = df_cleaned %>%
   group_by(year) %>%
-  mutate(condition = if_else(is.na(condition), floor(median(condition, na.rm = TRUE)), condition)) %>%
+  mutate(condition = if_else(is.na(condition), floor(mean(condition, na.rm = TRUE)), condition)) %>%
   ungroup()
 
 
