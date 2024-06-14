@@ -312,7 +312,7 @@ df_cleaned = update_transmissions(df_cleaned, df_transmission)
 
 
 
-# Reemplazamos los NA's de "condition" con la mediana de cada año.
+# Reemplazamos los NA's de "condition" con el promedio de cada año.
 
 df_cleaned = df_cleaned %>%
   group_by(year) %>%
@@ -341,6 +341,42 @@ df_cleaned = df_cleaned %>%
          sale_day_of_month = as.integer(sale_day_of_month),
          sale_month = as.integer(sale_month),
          sale_year = as.integer(sale_year))
+
+
+
+# Observamos las concesionarias que hayan vendido al menos 200 vehiculos.
+
+df_cleaned_sellers = df_cleaned %>%
+  group_by(seller) %>%
+  summarise(count = n()) %>%
+  filter(count >= 200) %>%
+  select(seller)
+
+
+# Observamos los modelos de vehiculos que tengan al menos 200 ventas.
+
+df_cleaned_model = df_cleaned %>%
+  group_by(model) %>%
+  summarise(count = n()) %>%
+  filter(count >= 200) %>%
+  select(model)
+
+
+# Observamos los sub-modelos de vehiculos que tengan al menos 200 ventas.
+
+df_cleaned_trim = df_cleaned %>%
+  group_by(trim) %>%
+  summarise(count = n()) %>%
+  filter(count >= 200) %>%
+  select(trim)
+
+
+# Nos quedamos solo con las concesionarias, los modelos y sub-modelos que aparecen al menos 200 veces.
+
+df_cleaned = df_cleaned %>%
+  inner_join(df_cleaned_sellers, by = "seller") %>%
+  inner_join(df_cleaned_model, by = "model") %>%
+  inner_join(df_cleaned_trim, by = "trim")
 
 
 # -------------------------------------------------------------------------------------------------------------------
