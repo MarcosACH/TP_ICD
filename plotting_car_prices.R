@@ -6,10 +6,10 @@ library(magick)
 library(ggimage)
 library(tools)
 
-### Importacion de "df_cleaned" y de "rendimiento_concesionarias".
+
+### Importacion de "df_cleaned".
 
 load("df_cleaned.RData")
-load("rendimiento_concesionarias.RData")
 
 
 # -------------------------------------------------------------------------------------------------------------------
@@ -89,7 +89,7 @@ sellingp_density = ggplot(data = df_cleaned) +
   theme(axis.line = element_line(color="black"), 
         axis.title = element_text(size=14),
         plot.title = element_text(size=18, hjust=0.5)) +
-  scale_x_continuous(breaks = seq(0, 150000, 50000)) +
+  scale_x_continuous(breaks = seq(0, 150000, 10000)) +
   labs(x = "Precio de venta [USD]", y = "Frecuencia", title = "Distribución de los precios de venta de los vehículos")
 sellingp_density
 
@@ -226,6 +226,34 @@ resid_vs_sellingp = ggplot(data = df_cleaned) +
         plot.title = element_text(size=18, hjust=0.5)) +
   labs(x = "Precio de venta [USD]", y = "Residuos del modelo", title = "Residuos del modelo de 'sellingprice' según el precio de venta del vehículo")
 resid_vs_sellingp
+
+
+
+# Distribucion y comparacion del precio de venta del vehículo por su color.
+
+sellingp_vs_color = ggplot(data = df_cleaned) + 
+  geom_boxplot(mapping = aes(x=color, y=sellingprice), color="#5d9b9b") +
+  theme(axis.line = element_line(color="black"), 
+        axis.title = element_text(size=14),
+        plot.title = element_text(size=18, hjust=0.5)) +
+  labs(x = "Color", y = "Precio de venta [USD]", title = "Precio de venta del vehículo según su color")
+sellingp_vs_color
+
+
+
+# Distribucion y comparacion del precio de venta del vehículo por la localidad de venta.
+
+sellingp_vs_state = ggplot(data = df_cleaned) + 
+  geom_boxplot(mapping = aes(x=state, y=sellingprice), color="#5d9b9b") +
+  theme(axis.line = element_line(color="black"), 
+        axis.title = element_text(size=14),
+        plot.title = element_text(size=18, hjust=0.5),
+        axis.text.x = element_text(size=11, angle=45, hjust=1)) +
+  labs(x = "Color", y = "Precio de venta [USD]", title = "Precio de venta del vehículo según la localidad de venta")
+sellingp_vs_state
+
+
+# -------------------------------------------------------------------------------------------------------------------
 
 
 # Fin del analisis de graficos.
