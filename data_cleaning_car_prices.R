@@ -362,7 +362,7 @@ df_cleaned_model = df_cleaned %>%
   select(model)
 
 
-# Observamos los sub-modelos de vehiculos que tengan al menos 200 ventas.
+# Observamos los submodelos de vehiculos que tengan al menos 200 ventas.
 
 df_cleaned_trim = df_cleaned %>%
   group_by(trim) %>%
@@ -371,7 +371,7 @@ df_cleaned_trim = df_cleaned %>%
   select(trim)
 
 
-# Nos quedamos solo con las concesionarias, los modelos y sub-modelos que aparecen al menos 200 veces.
+# Nos quedamos solo con las concesionarias, los modelos y submodelos de vehiculos que aparecen al menos 200 veces.
 
 df_cleaned = df_cleaned %>%
   inner_join(df_cleaned_sellers, by = "seller") %>%
