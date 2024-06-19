@@ -253,6 +253,18 @@ sellingp_vs_state = ggplot(data = df_cleaned) +
 sellingp_vs_state
 
 
+
+# Relacion entre la condicion del vehiculo y su kilometraje.
+
+condition_vs_odometer = ggplot(data = df_cleaned) +
+  geom_point(mapping = aes(x=odometer, y=condition), color="#5d9b9b") +
+  theme(axis.line = element_line(color="black"), 
+        axis.title = element_text(size=14),
+        plot.title = element_text(size=18, hjust=0.5)) +
+  labs(x = "Kilometraje [KM]", y = "Condición", title = "Condición del vehículo según su kilometraje")
+condition_vs_odometer
+
+
 # -------------------------------------------------------------------------------------------------------------------
 
 
