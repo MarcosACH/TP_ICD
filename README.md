@@ -155,3 +155,11 @@ Para terminar de definir el precio de venta debemos utilizar nuestro modelo y ha
 $$W1 ⋅ odometer + W2 ⋅ condition + W3 ⋅ (odometer ⋅ condition) + year + make + body + seller + model + trim + color + state = sellingprice$$
 $$-0,005062 · 8.400 + 170,8 · 49 - 0,0014 · (8.400 · 49) + 30.693 - 5.516 - 7810 + 12.185 - 1429 + 1098 + 17 - 2015 ≃ 34.973$$
 Entonces si queremos vender un vehículo con estas características, según nuestro modelo lo podemos publicar a 34.974 dólares en la concesionaria **"Bmw na Manheim New Jersey"**.
+
+## Codigo fuente
+Este repositorio además contiene todo el código fuente elaborado para llevar a cabo este proyecto final. Para visualizar el código de la [limpieza de datos](#limpieza-de-datos), entrar [aquí](https://github.com/MarcosACH/tp-icd/blob/main/data_cleaning_car_prices.R).
+Para visualizar el código de la [exploración del dataset](#exploración-del-dataset), entrar [aquí](https://github.com/MarcosACH/tp-icd/blob/main/plotting_car_prices.R). 
+Por último, para visualizar el código del [modelado](#modelado), entrar [aquí](https://github.com/MarcosACH/tp-icd/blob/main/modeling_car_prices.R).
+> [!IMPORTANT]
+> Para un correcto uso del código fuente, por favor respetar el orden de ejecución (desde la parte superior del archivo hasta la parte inferior),
+> de lo contrario obtendrán resultados erróneos.
