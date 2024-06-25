@@ -34,6 +34,7 @@ columnas. Este dataset nos brinda información sobre transacciones de ventas de 
 - `mmr`: precio estimado del vehículo.
 - `sellingprice`: precio de venta del vehículo.
 - `saledate`: fecha de la venta. <br>
+
 Debido a que el mismo contiene irregularidades en los datos (outliers, datos mal ingresados, datos faltantes, etc) y
 errores estructurales (tipos de datos no convenientes para el posterior análisis) decidimos hacer una limpieza de datos del dataset.
 
@@ -51,16 +52,16 @@ los valores menores o iguales que 5 para ubicarlos en los espacios libres que ha
 Luego convertimos todas las columnas de tipo de dato `chr`, excepto `vin` y `saledate` que contenían datos únicos, a minúscula ya que tenían irregularidades en
 su formato. Además unificamos el formato de estas columnas porque había valores diferentes que referian al mismo significado, entonces pasamos todos esos valores a minúscula. <br>
 El dataset también tenía muchos datos faltantes. Decidimos eliminar a todas aquellas observaciones que su valor de `make`, `model`, `odometer`, `sellingprice`,
-`saledate`, `body` o `color` era NA ya que no queríamos tener vehículos sin esos datos tan relevantes para el modelado de su precio de venta. Vale aclarar que todas
-estas variables tenían muy pocos datos NA, por eso decidimos tomar esta decisión. Posteriormente nos fijamos si había datos “outliers” o mal ingresados. Para esto
+`saledate`, `body` o `color` era `NA` ya que no queríamos tener vehículos sin esos datos tan relevantes para el modelado de su precio de venta. Vale aclarar que todas
+estas variables tenían muy pocos datos `NA`, por eso decidimos tomar esta decisión. Posteriormente nos fijamos si había datos “_outliers_” o mal ingresados. Para esto
 generamos algunos gráficos que nos ayudaron a identificar posibles casos. El kilometraje más alto de los vehículos de este dataset es de 999.999 kilómetros. Había
 vehículos de años bastante actuales y con esta cantidad de kilómetros, algo raro. Por eso eliminamos todos aquellos que eran mayores al año 2005 y que tengan 999.999
 kilómetros. Además eliminamos todos los vehículos que tengan menos de 100 kilómetros para enfocarnos únicamente en autos usados. <br>
 Como dato mal ingresado encontramos solo a uno en donde `sellingprice` era de 230.000 dólares y el precio de venta estimado del vehículo (`mmr`) era de 22.800
-dólares. Claramente este dato estaba mal ingresado ya que además las características del vehículo no justificaban a ese precio, o por lo menos eso es lo que suponemos.
-Entonces dividimos el valor por 10 para quitarle un o. Luego eliminamos todos los vehículos que su precio de venta haya sido menor a 300 dólares. No nos pareció lógico
+dólares. Claramente este dato estaba mal ingresado ya que además las características del vehículo no justificaban a ese precio, o por lo menos eso es lo que supusimos.
+Entonces dividimos el valor por 10 para quitarle un 0. Luego eliminamos todos los vehículos que su precio de venta haya sido menor a 300 dólares. No nos pareció lógico
 quedarnos con autos extremadamente baratos o directamente con precios mal ingresados. <br>
-La columna `transmission` tenía varios valores NA y no correspondía eliminarlos (era una cantidad significativa). Es por esto que decidimos agrupar a los datos por marca y
+La columna `transmission` tenía varios valores `NA` y no correspondía eliminarlos (era una cantidad significativa). Es por esto que decidimos agrupar a los datos por marca y
 modelo, y en base a la proporción de vehículos automáticos y manuales que tenía cada agrupación, calculamos la cantidad de `NA's` que debían ser reemplazados por
 "_automatic_" o por "_manual_". Por ejemplo, si una agrupación tenía un 70% de los vehículos automáticos, entonces el 70% de los datos faltantes se reemplazó por
 “_automatic_” y el 30% restante por “_manual_”. <br>
@@ -70,31 +71,31 @@ separar esos datos en columnas diferentes, obteniendo una columna que contenga e
 mes, otra el año y la original (`saledate`) la fecha completa en formato "_yyyy-mm-dd_" y con tipo de dato `dttm`. <br>
 Finalmente, por una cuestión de poder computacional y poder modelar adecuadamente, decidimos quedarnos únicamente con las concesionarias, modelos y
 submodelos de vehículos que tengan al menos 200 ventas. Si no hubiéramos hecho este paso, nuestro modelo tendría que tener muchísimos coeficientes para cada una de
-estas variables, y consecuentemente no podríamos generar estos modelos. <br>
+estas variables, y consecuentemente no podríamos generar ninguno. <br>
 Una vez finalizada la limpieza, el dataset quedó compuesto por 322.391 observaciones y 20 columnas.
 
 ## Exploración del Dataset
 En esta etapa, ya con el dataset preparado para un estudio adecuado, generamos algunos gráficos y los analizamos para identificar posibles patrones. <br>
 Para comenzar, en el siguiente gráfico de dispersión podemos ver la relación entre el precio de venta de un vehículo y su kilometraje. Se nota claramente que a medida que
 el kilometraje aumenta, el precio de venta disminuye. Es decir que hay una relación inversa entre estas dos variables. Esto era de esperar y podemos afirmar que el
-kilometraje impacta fuertemente en el precio de venta del vehículo. <br> <br> ![sellingp_vs_odometer](https://github.com/MarcosACH/tp-icd/blob/main/sellingp_vs_odometer.png)
+kilometraje impacta fuertemente en el precio de venta del vehículo. <br> <br> <p align="center"> ![sellingp_vs_odometer](https://github.com/MarcosACH/tp-icd/blob/main/sellingp_vs_odometer.png) </p>
 
 A continuación podemos ver un gráfico de cajas (boxplot) que representa la distribución del precio de venta de un vehículo por cada unidad de condición del
 mismo. Este también nos permite comparar dichas distribuciones y deja en claro que a medida que aumenta la condición de un vehículo (mejora su estado) también lo hace
 su precio de venta. Entonces podemos afirmar que existe una relación directa entre ambas variables. También se ve claramente como la mediana de cada unidad de
 condición va aumentando y hay una gran variabilidad en los precios dentro de cada nivel. 
-Otro claro factor que afecta al precio de venta de un vehículo. <br> <br> ![sellingp_vs_condition](https://github.com/MarcosACH/tp-icd/blob/main/sellingp_vs_condition.png)
+Otro claro factor que afecta al precio de venta de un vehículo. <br> <br> <p align="center"> ![sellingp_vs_condition](https://github.com/MarcosACH/tp-icd/blob/main/sellingp_vs_condition.png) </p>
 
 Por otro lado, a continuación vemos otro gráfico de cajas que muestra la distribución de los precios de venta de los vehículos por cada año de fabricación de los mismos. 
 De vuelta, podemos ver de manera clara como el precio de venta aumenta a medida que el año también lo hace. Podemos afirmar que el año de fabricación de un vehículo juega
-un rol importante en el precio del mismo. <br> <br> ![sellingp_vs_year](https://github.com/MarcosACH/tp-icd/blob/main/sellingp_vs_year.png)
+un rol importante en el precio del mismo. <br> <br> <p align="center"> ![sellingp_vs_year](https://github.com/MarcosACH/tp-icd/blob/main/sellingp_vs_year.png) </p>
 
 Por último, debajo vemos un gráfico de densidad que representa la distribución de los precios de venta de los diferentes vehículos. La mayor densidad de precios está entre
 los 10.000 y 15.000 dólares. También se nota una densidad muy baja para los precios mayores a 50.000 dólares. Algo que también podemos destacar es que no hay
-múltiples picos de densidad, solo hay uno que está sobre el rango previamente mencionado. <br> <br> ![sellingp_density](https://github.com/MarcosACH/tp-icd/blob/main/sellingp_density.png)
+múltiples picos de densidad, solo hay uno que está sobre el rango previamente mencionado. <br> <br> <p align="center"> ![sellingp_density](https://github.com/MarcosACH/tp-icd/blob/main/sellingp_density.png) </p>
 
 ## Modelado
-Para el modelado de nuestra variable target, `sellingprice`, decidimos primero realizar cuatro modelos diferentes de regresión lineal múltiple y compararlos con una tabla ANOVA. <br>
+Para el modelado de nuestra variable target, `sellingprice`, decidimos primero realizar cuatro modelos diferentes de **regresión lineal múltiple** y compararlos con una tabla **ANOVA**. <br>
 Todos los modelos que construimos están compuestos por una interacción entre dos variables, `odometer` y `condition`, ya que creemos que el kilometraje y la condición
 de un vehículo están fuertemente relacionados. Más allá de que no sabemos si el efecto de `odometer` sobre la variable dependiente varía en función del nivel de
 `condition`, vale aclarar que además decidimos sumar esta interacción ya que el modelo logró obtener un ajuste mejor al que obtuvo uno sin esta interacción. Por
@@ -112,14 +113,14 @@ Finalmente, al cuarto y último modelo, le añadimos otra variable categórica, 
 W3 ⋅ (odometer ⋅ condition) + year + make + body + seller + model + trim + color + state + transmission$$ Su error estándar residual y su R-cuadrado múltiple son iguales a los del tercer modelo. <br>
 Luego de generar estos cuatro modelos y analizar los resultados de cada uno, los comparamos con una tabla de análisis de varianza (**ANOVA**). Como podrán ver, los
 cuatro modelos van aumentando en complejidad. Para los primeros tres modelos, el p-valor resultó ser muy bajo, $<2 ⋅ 10^{16}$ , y se indicaron con tres asteriscos de
-significancia (***). En otras palabras, esto indica que la probabilidad de que la mejora en el ajuste del modelo al agregar nuevas variables haya ocurrido por casualidad es
+significancia (**\*\*\***). En otras palabras, esto indica que la probabilidad de que la mejora en el ajuste del modelo al agregar nuevas variables haya ocurrido por casualidad es
 extremadamente baja. También podemos decir que los modelos más complejos proporcionan un ajuste significativamente mejor que el modelo más simple (modelo 1). 
-Sin embargo, el último modelo y el más complejo obtuvo un p-valor bastante elevado, 0,4331, y lógicamente ningún asterisco de significancia. En este caso, la
+Sin embargo, el cuarto y último modelo obtuvo un p-valor bastante elevado, 0,4331, y lógicamente ningún asterisco de significancia. En este caso, la
 probabilidad de que la mejora en el ajuste del modelo al agregar nuevas variables haya ocurrido por casualidad es muy elevada, casi de 0.5. Esto claramente no es bueno, sin
 embargo vale la pena aclarar que aproximadamente un 97% de la variable `transmission` (variable agregada) está compuesta por valores de vehículos
 automáticos, entonces no presenta gran variabilidad. Quizás esta es la razón por la cual el cuarto modelo obtuvo un p-valor muy elevado. <br>
 Después de analizar la tabla de análisis de varianza realizamos un gráfico de residuos versus las predicciones de la variable dependiente del tercer modelo, el cual hasta
-ahora creemos que es el mejor para estudiar a la variable target. A continuación podemos ver el gráfico. <br> <br> ![residuals_vs_fitted](https://github.com/MarcosACH/tp-icd/blob/main/residuals_vs_fitted.png)
+ahora creemos que es el mejor para estudiar a la variable target. A continuación podemos ver el gráfico. <br> <br> <p align="center"> ![residuals_vs_fitted](https://github.com/MarcosACH/tp-icd/blob/main/residuals_vs_fitted.png) </p>
 
 Lo primero y lo que más nos llamó la atención cuando analizamos este gráfico fue que hay predicciones negativas. Nos preguntamos, ¿cómo es posible que haya precios de
 vehículos negativos? Lamentablemente no supimos responder esta pregunta y nos hizo replantearnos varios aspectos del proyecto y desviarnos bastante. De hecho
@@ -129,20 +130,20 @@ Por otro lado vemos que hay un claro patrón del lado izquierdo del gráfico en 
 que es probable que el modelo no esté capturando adecuadamente la relación entre las variables independientes y la variable dependiente. <br>
 Por último podemos afirmar que la línea roja, que es una suavización de los residuos, no está alineada con la línea horizontal en 0 (el modelo). Esto nos explica que los
 residuos no están distribuidos simétricamente con las predicciones del modelo. Por lo tanto podemos observar que para predicciones bajas y también elevadas, el modelo
-está mayormente subestimando el precio del vehículo mientras que en el centro (15.000 - 25.000 dólares aproximadamente), el modelo se comporta muy bien y logra
+está mayormente subestimando el precio del vehículo mientras que en el centro (de 15.000 a 25.000 dólares aproximadamente), el modelo se comporta muy bien y logra
 predecir adecuadamente el precio del vehículo. <br>
 Teniendo todos estos resultados en cuenta, decidimos basar nuestra conclusión y respuesta a la pregunta de estudio en el tercer modelo, ya que fue el último y más
-complejo en obtener un p-valor muy pequeño en la tabla ANOVA y los mejores valores de $RSE$ y $R²$. Pero antes de pasar a la conclusión queda aclarar los coeficientes de las
+complejo en obtener un p-valor muy pequeño en la tabla **ANOVA** y los mejores valores de $RSE$ y $R²$. Pero antes de pasar a la conclusión queda aclarar los coeficientes de las
 variables continuas de este modelo. <br>
 Por cada kilómetro que recorre el vehículo, su precio de venta disminuye aproximadamente 0,0051 dólares. Y por cada unidad de condición que aumenta, su
 precio aumenta aproximadamente 170 dólares. <br>
-Y ahora, ¿en que concesionaria vendo mi vehículo? Hay que tener en cuenta que la respuesta a esta pregunta depende del fabricante de tu vehículo, ya que no todas las
-concesionarias venden cualquier marca. Entonces para responder buscamos a la concesionaria que obtuvo el mayor coeficiente en nuestro modelo y que además vende
+Y ahora, _¿en que concesionaria vendo mi vehículo?_ Hay que tener en cuenta que la respuesta de esta pregunta depende del fabricante de tu vehículo, ya que no todas las
+concesionarias venden cualquier marca. Entonces para responder la pregunta, buscamos a la concesionaria que obtuvo el mayor coeficiente en nuestro modelo y que además vende
 vehículos del fabricante del vehículo de estudio. Para esto buscamos a todas las concesionarias que hayan vendido autos de aquel fabricante, buscamos todos los
-coeficientes de esas concesionarias y nos quedamos con el mayor. De esta manera podemos publicar nuestro vehículo en la concesionaria que más aumenta al precio de venta.
+coeficientes de esas concesionarias y nos quedamos con el mayor. De esta manera podemos publicar nuestro vehículo en la concesionaria que más aumenta su precio de venta.
 
 ## Conclusión
-Luego de finalizar con el estudio podemos afirmar que hay muchos factores que afectan al precio de un vehículo, como todos los que incluye nuestro modelo.
+Luego de finalizar con el análisis podemos afirmar que hay muchos factores que afectan al precio de un vehículo, como todos los que incluye nuestro modelo.
 Para concluir este trabajo práctico decidimos mostrar un ejemplo práctico en donde aplicamos el modelo que creamos y respondemos a una pregunta específica.
 
 #### Ejemplo práctico
